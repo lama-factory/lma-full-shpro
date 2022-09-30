@@ -215,7 +215,7 @@ class ShippyFulfillmentService extends FulfillmentService {
       }
     } catch (err) {
       console.log(err);
-      throw err;
+      return {};
     }
   }
 }

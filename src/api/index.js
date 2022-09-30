@@ -49,7 +49,7 @@ export default (rootDirectory) => {
         logger.warn("Shippy webhook could not be authenticated");
       }
 
-      res.sendStatus(200);
+      res.status(200).send({});
     }
   );
   return app;
