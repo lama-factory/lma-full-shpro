@@ -6,7 +6,7 @@ class ShippySubscriber {
   }
 
   handleShipment = async ({ headers, body }) => {
-    //return this.shippyService.handleWebhook(headers, body);
+    return this.shippyService.handleWebhook(headers, body);
   };
 }
 

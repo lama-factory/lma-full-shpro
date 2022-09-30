@@ -4,13 +4,15 @@ import Shippy from "../utils/shippy";
 class ShippyFulfillmentService extends FulfillmentService {
   static identifier = "shippy";
 
-  constructor({ logger }, options) {
+  constructor({ logger, orderService }, options) {
     super();
 
     this.options_ = options;
 
     /** @private @const {logger} */
     this.logger_ = logger;
+
+    this.orderService_ = orderService;
 
     /** @private @const {AxiosClient} */
     this.client_ = new Shippy({
@@ -133,7 +135,7 @@ class ShippyFulfillmentService extends FulfillmentService {
             weight: 10,
           },
         ],
-        TransactionID: String(fromOrder.display_id),
+        TransactionID: ext_ref,
         Date: Number(
           String(new Date(fromOrder.created_at).getTime()).slice(0, 10)
         ),
@@ -199,6 +201,22 @@ class ShippyFulfillmentService extends FulfillmentService {
 
   //     return this.client_.orders.delete(data.id);
   //   }
-}
 
+  async handleWebhook(_, body) {
+    try {
+      // This is to track when and order is shipped
+      console.log("webhook body", body);
+      if (body.code === 1) {
+        const [orderId, fulfillmentId] = body.TransactionID.split(".");
+
+        return this.orderService_.createShipment(orderId, fulfillmentId, [
+          { url: body.ExternalLink, tracking_number: body.tracking },
+        ]);
+      }
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+}
 export default ShippyFulfillmentService;
