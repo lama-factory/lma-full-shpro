@@ -207,10 +207,22 @@ class ShippyFulfillmentService extends FulfillmentService {
       // This is to track when and order is shipped
       console.log("webhook body", body);
       const [orderId, fulfillmentId] = body.TransactionID.split("_ful");
-
-      return this.orderService_.createShipment(orderId, "ful" + fulfillmentId, [
-        { tracking_number: body.TrackingNumber },
-      ]);
+      if (body.Event === "ORDER_SHIPPED") {
+        return this.orderService_.createShipment(
+          orderId,
+          "ful" + fulfillmentId,
+          [{ tracking_number: body.TrackingNumber }]
+        );
+      } else if (body.Event === "TRACKING_UPDATE") {
+        if (body.code === 1) {
+          return this.orderService_.createShipment(
+            orderId,
+            "ful" + fulfillmentId,
+            [{ url: body.ExternalLink, tracking_number: body.tracking }],
+            { no_notification: true }
+          );
+        }
+      }
     } catch (err) {
       console.log(err);
       return {};
